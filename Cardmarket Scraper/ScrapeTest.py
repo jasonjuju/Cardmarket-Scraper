@@ -44,8 +44,17 @@ class CardResults:
 
 
         for i in range(len(nameList)):
-            self.sellers.append(nameList[i].text)
-            self.prices.append(priceList[2*i + 1].text)
+            if nameList[i].text not in self.sellers:
+                self.sellers.append(nameList[i].text)
+
+                #0,15 € price format
+                retrievedPrice = priceList[2*i + 1].text
+                
+                formattedPrice = re.sub(r"[€ ]", "", retrievedPrice)
+                formattedPrice = re.sub(r",", ".", formattedPrice)
+                formattedPrice = float(formattedPrice)
+
+                self.prices.append(formattedPrice)
 
     def RetrieveSellers(self, driver):
         driver.get(self.GetURL())
@@ -56,7 +65,26 @@ class CardResults:
         url = "https://www.cardmarket.com/en/Magic/Cards/" + self.name +"?sellerCountry=" + str(country) +"&language=" + str(language)
         return url
 
+class CardSeller:
+    def __init__(self, name):
+        self.name = name
 
+        self.cards = []
+    
+    def AddCard(self, cardName, price):
+        self.cards.append(Card(cardName, price))
+    
+class Card:
+    def __init__(self, name, price):
+        self.name = name
+        self.price = price
+    
+    def GetCardName(self):
+        return self.name
+    
+    def GetCardPrice(self):
+        return self.price
+    
 
 
 if __name__ == "__main__":
@@ -73,7 +101,7 @@ if __name__ == "__main__":
     # Initialize driver properly
     driver = webdriver.Chrome(service=service, options=options)
 
-    CardsTestList = []
+    CardsResultList = []
 
     with open("decklist.txt") as decklist:
         for line in decklist:
@@ -92,16 +120,26 @@ if __name__ == "__main__":
             
             CardTest = CardResults(fixedLine, driver)
 
-            CardsTestList.append(CardTest)
+            CardsResultList.append(CardTest)
 
 
             
-
+    totalPrice = 0.0
 
     print("Results:")
 
-    for Card in CardsTestList:
-        print(Card.name, ": ", Card.sellers[0], ": ", Card.prices[0])
+    for Card in CardsResultList:
+        #Get owners of card
+        #if owner doesn't exist, create seller and say they have that card
+        #else add that card to it's corresponding seller
+
+
+
+        if len(Card.sellers) > 0:
+            print(Card.name, ": ", Card.sellers[0], ": ", Card.prices[0])
+            totalPrice += float(Card.prices[0])
+
+    print("Total Price: ", totalPrice)
 
     #TestCard = CardResults("Umbral-Collar-Zealot", driver)
     #TestCard2 = CardResults("The-Gaffer", driver)
