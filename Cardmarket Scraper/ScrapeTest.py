@@ -42,10 +42,12 @@ class CardResults:
         self.sellers = []
         self.prices = []
 
+        self.lowestPrice = None
+
 
         for i in range(len(nameList)):
             if nameList[i].text not in self.sellers:
-                self.sellers.append(nameList[i].text)
+                
 
                 #0,15 € price format
                 retrievedPrice = priceList[2*i + 1].text
@@ -54,6 +56,14 @@ class CardResults:
                 formattedPrice = re.sub(r",", ".", formattedPrice)
                 formattedPrice = float(formattedPrice)
 
+                if self.lowestPrice == None:
+                    self.lowestPrice = formattedPrice
+
+                #If price is higher than £1.15 more than cheapest, break out of loop
+                if formattedPrice >= self.lowestPrice + 1.15:
+                    break
+
+                self.sellers.append(nameList[i].text)
                 self.prices.append(formattedPrice)
 
     def RetrieveSellers(self, driver):
@@ -86,6 +96,8 @@ class Card:
         return self.price
     
 
+def CalculateLeastSellers():
+    pass
 
 if __name__ == "__main__":
 
@@ -128,21 +140,38 @@ if __name__ == "__main__":
 
     print("Results:")
 
-    for Card in CardsResultList:
+    sellerList = []
+    currentSellers = []
+
+    for CardResult in CardsResultList:
         #Get owners of card
         #if owner doesn't exist, create seller and say they have that card
         #else add that card to it's corresponding seller
 
+        for i in range(len(CardResult.sellers)):
+            if CardResult.sellers[i] not in sellerList:
+                newSeller = CardSeller(CardResult.sellers[i])
+                newSeller.AddCard(CardResult.name, CardResult.prices[i])
+                currentSellers.append(newSeller)
+                sellerList.append(CardResult.sellers[i])
+            else:
+                for sel in currentSellers:
+                    if sel.name == CardResult.sellers[i]:
+                        sel.AddCard(CardResult.name, CardResult.prices[i])
 
 
-        if len(Card.sellers) > 0:
-            print(Card.name, ": ", Card.sellers[0], ": ", Card.prices[0])
-            totalPrice += float(Card.prices[0])
+
+
+        if len(CardResult.sellers) > 0:
+            print(CardResult.name, ": ", CardResult.sellers[0], ": ", CardResult.prices[0])
+            totalPrice += float(CardResult.prices[0])
 
     print("Total Price: ", totalPrice)
 
-    #TestCard = CardResults("Umbral-Collar-Zealot", driver)
-    #TestCard2 = CardResults("The-Gaffer", driver)
+    #for sel in currentSellers:
+    #    print("Seller: ", sel.name, " No. Cards: ", len(sel.cards))
+
+    CalculateLeastSellers()
 
     #driver.get(TestCard.GetURL())
     #time.sleep(2)
