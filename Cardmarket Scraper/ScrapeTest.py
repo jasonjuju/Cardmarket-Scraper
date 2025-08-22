@@ -31,6 +31,8 @@ language = 1 # English
 #synergy
 
 
+#**If price trend is lower than available from, then it can be got cheaper**
+
 class CardResults:
     def __init__(self, name, driver):
         self.name = name
@@ -96,8 +98,20 @@ class Card:
         return self.price
     
 
-def CalculateLeastSellers():
-    pass
+def CalculateLeastSellers(allSellers):
+
+    mostCards = 0
+    highestSeller = None
+
+    for sel in allSellers:
+        if len(sel.cards) > mostCards:
+            mostCards = len(sel.cards)
+            highestSeller = sel
+    
+    print("Seller with most cards: ", highestSeller.name)
+
+    for c in highestSeller.cards:
+        print("Card: ", c.name, " Price: ", c.price)
 
 if __name__ == "__main__":
 
@@ -171,7 +185,7 @@ if __name__ == "__main__":
     #for sel in currentSellers:
     #    print("Seller: ", sel.name, " No. Cards: ", len(sel.cards))
 
-    CalculateLeastSellers()
+    CalculateLeastSellers(currentSellers)
 
     #driver.get(TestCard.GetURL())
     #time.sleep(2)
